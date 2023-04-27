@@ -3,9 +3,23 @@
 ## Dataset and setup
 Tutorial: https://github.com/lorint/AdventureWorks-for-Postgres
 
-### Create database
+### Log in
 ```sql
+psql -U postgres
+```
+
+### Create database
+```
+psql -c "CREATE DATABASE \"Adventureworks\";" -U postgres
+
+OR
+
 CREATE DATABASE Awesomeworks;
+```
+
+### Add install.sql to docker container
+```docker
+docker cp install.sql adventure_works-db-1:/install.sql
 ```
 
 ### Init database
