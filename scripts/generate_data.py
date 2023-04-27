@@ -1,8 +1,7 @@
-from typing import List
+import json
 from datetime import date
 import psycopg2
 from psycopg2 import OperationalError
-from psycopg2.extras import execute_values
 
 game_titles = [
     "Mario", "Halo", "Last of Us", "Sonic"
@@ -18,22 +17,35 @@ def main():
     print("Hello World!")
     try:
         connection = psycopg2.connect(
-            database="postgres",
+            database="Adventureworks",
             user="postgres",
             password="postgres",
             host="localhost",
             port="5433"
         )
         print("Connection to PostgreSQL DB successful")
+        insert_into_db(connection, create_game_sales())
     except OperationalError as e:
         print(f"The error '{e}' occurred")
-    return connection
+
+
+def insert_into_db(conn, values):
+    simple_values = [[value for value in value.values()] for value in values]
+    sql = "INSERT INTO games.game_sales(customer, game_name, store, price, receipt) VALUES (%s, %s, %s, %s, %s)"
+    with conn.cursor() as curs:
+        try:
+            for sv in simple_values:
+                curs.execute(sql, (sv[0], sv[1], sv[2], sv[3], json.dumps(sv[4])))
+        except Exception as e:
+            raise e
+        finally:
+            conn.commit()
 
 
 def create_game_sales():
     game_sales = []
-    for i in 1000000:
-        game_sales[i] = {
+    for i in range(10000):
+        game_sales.append({
             "customer": i + 1,
             "game_name": game_titles[i % game_titles_size],
             "store": store_names[i % store_names_size],
@@ -43,7 +55,7 @@ def create_game_sales():
                 "game_name": game_titles[i % game_titles_size],
                 "store": store_names[i % store_names_size],
                 "price": i,
-                "date": date.today(),
+                "date": "" + str(date.today()),
                 "customer_info": [
                     f"random_customer_info_{i % 100}",
                     f"more_customer_info_{i % 100}"
@@ -54,7 +66,7 @@ def create_game_sales():
                     "number": i % 100
                 }
             }
-        }
+        })
     return game_sales
 
 
